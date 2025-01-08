@@ -1,0 +1,113 @@
+export type Student = {
+  id: number;
+  name: string;
+  age: number;
+  bloodGroup: string;
+  email: string;
+  phone: string;
+  address: string;
+  hobbies: string[];
+};
+
+export const students: Student[] = [
+  {
+    id: 1,
+    name: "John Smith",
+    age: 20,
+    bloodGroup: "A+",
+    email: "john.smith@example.com",
+    phone: "(555) 123-4567",
+    address: "123 Main St, Anytown, USA",
+    hobbies: ["Reading", "Swimming"]
+  },
+  {
+    id: 2,
+    name: "Emma Johnson",
+    age: 19,
+    bloodGroup: "O-",
+    email: "emma.j@example.com",
+    phone: "(555) 234-5678",
+    address: "456 Oak Ave, Somewhere, USA",
+    hobbies: ["Painting", "Photography"]
+  },
+  {
+    id: 3,
+    name: "Michael Brown",
+    age: 21,
+    bloodGroup: "B+",
+    email: "michael.b@example.com",
+    phone: "(555) 345-6789",
+    address: "789 Pine Rd, Elsewhere, USA",
+    hobbies: ["Soccer", "Gaming"]
+  },
+  {
+    id: 4,
+    name: "Sarah Davis",
+    age: 20,
+    bloodGroup: "AB+",
+    email: "sarah.d@example.com",
+    phone: "(555) 456-7890",
+    address: "321 Elm St, Nowhere, USA",
+    hobbies: ["Dancing", "Cooking"]
+  },
+  {
+    id: 5,
+    name: "James Wilson",
+    age: 22,
+    bloodGroup: "A-",
+    email: "james.w@example.com",
+    phone: "(555) 567-8901",
+    address: "654 Maple Dr, Anywhere, USA",
+    hobbies: ["Basketball", "Music"]
+  },
+  {
+    id: 6,
+    name: "Emily Taylor",
+    age: 19,
+    bloodGroup: "O+",
+    email: "emily.t@example.com",
+    phone: "(555) 678-9012",
+    address: "987 Cedar Ln, Somewhere, USA",
+    hobbies: ["Writing", "Yoga"]
+  },
+  {
+    id: 7,
+    name: "Daniel Anderson",
+    age: 21,
+    bloodGroup: "B-",
+    email: "daniel.a@example.com",
+    phone: "(555) 789-0123",
+    address: "147 Birch St, Elsewhere, USA",
+    hobbies: ["Tennis", "Drawing"]
+  },
+  {
+    id: 8,
+    name: "Olivia Martinez",
+    age: 20,
+    bloodGroup: "AB-",
+    email: "olivia.m@example.com",
+    phone: "(555) 890-1234",
+    address: "258 Walnut Ave, Nowhere, USA",
+    hobbies: ["Singing", "Gardening"]
+  },
+  {
+    id: 9,
+    name: "William Lee",
+    age: 22,
+    bloodGroup: "A+",
+    email: "william.l@example.com",
+    phone: "(555) 901-2345",
+    address: "369 Spruce Rd, Anywhere, USA",
+    hobbies: ["Running", "Photography"]
+  },
+  {
+    id: 10,
+    name: "Sofia Garcia",
+    age: 19,
+    bloodGroup: "O+",
+    email: "sofia.g@example.com",
+    phone: "(555) 012-3456",
+    address: "741 Pine St, Somewhere, USA",
+    hobbies: ["Painting", "Dancing"]
+  }
+];
