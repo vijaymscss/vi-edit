@@ -1,0 +1,170 @@
+import React, { useState } from 'react';
+import {
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  ColumnDef,
+  flexRender,
+  ExpandedState,
+  getExpandedRowModel,
+} from '@tanstack/react-table';
+import { ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { Student } from '../data/students';
+
+interface StudentTableProps {
+  data: Student[];
+}
+
+const StudentTable: React.FC<StudentTableProps> = ({ data }) => {
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [expanded, setExpanded] = useState<ExpandedState>({});
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+
+  const columns: ColumnDef<Student>[] = [
+    {
+      id: 'expander',
+      header: () => null,
+      cell: ({ row }) => (
+        <button
+          onClick={row.getToggleExpandedHandler()}
+          className="expander-btn"
+        >
+          {row.getIsExpanded() ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </button>
+      ),
+    },
+    {
+      accessorKey: 'name',
+      header: 'Name',
+      cell: info => info.getValue(),
+    },
+    {
+      accessorKey: 'age',
+      header: 'Age',
+      cell: info => info.getValue(),
+    },
+    {
+      accessorKey: 'bloodGroup',
+      header: 'Blood Group',
+      cell: info => info.getValue(),
+    },
+  ];
+
+  const table = useReactTable({
+    data,
+    columns,
+    state: {
+      expanded,
+      globalFilter,
+      sorting,
+      columnFilters,
+    },
+    onExpandedChange: setExpanded,
+    onGlobalFilterChange: setGlobalFilter,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getRowCanExpand: () => true,
+  });
+
+  return (
+    <div className="table-container">
+      <div className="search-wrapper">
+        <div className="search-box">
+          <Search className="h-5 w-5" style={{ color: '#94a3b8' }} />
+          <input
+            type="text"
+            value={globalFilter ?? ''}
+            onChange={e => setGlobalFilter(e.target.value)}
+            placeholder="Search all columns..."
+            className="search-input"
+          />
+        </div>
+      </div>
+      <div className="table-scroll">
+        <table className="student-table">
+          <thead>
+            {table.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map(header => (
+                  <th key={header.id}>
+                    {header.isPlaceholder ? null : (
+                      <div
+                        className={header.column.getCanSort() ? 'sort-header' : ''}
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                      </div>
+                    )}
+                    {header.column.getCanFilter() && header.column.id !== 'expander' ? (
+                      <input
+                        type="text"
+                        onChange={e => header.column.setFilterValue(e.target.value)}
+                        placeholder={`Search ${header.column.id}...`}
+                        className="column-filter"
+                      />
+                    ) : null}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map(row => (
+              <React.Fragment key={row.id}>
+                <tr>
+                  {row.getVisibleCells().map(cell => (
+                    <td key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </td>
+                  ))}
+                </tr>
+                {row.getIsExpanded() && (
+                  <tr>
+                    <td colSpan={row.getVisibleCells().length}>
+                      <div className="detail-panel">
+                        <h3>Student Details</h3>
+                        <div className="detail-grid">
+                          <div>
+                            <p><strong>Email:</strong> {row.original.email}</p>
+                            <p><strong>Phone:</strong> {row.original.phone}</p>
+                            <p><strong>Address:</strong> {row.original.address}</p>
+                          </div>
+                          <div>
+                            <p><strong>Hobbies:</strong></p>
+                            <ul className="hobbies-list">
+                              {row.original.hobbies.map((hobby, index) => (
+                                <li key={index}>{hobby}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default StudentTable;
