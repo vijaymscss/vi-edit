@@ -1,0 +1,288 @@
+.table-container {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid #ddd;
+}
+
+.th, .td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+.th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+  user-select: none;
+  position: relative;
+}
+
+.th-resizer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 5px;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+  opacity: 0;
+}
+
+.th-resizer:hover {
+  opacity: 1;
+}
+
+.tr {
+  border-bottom: 1px solid #ddd;
+}
+
+.tr:hover {
+  background-color: #f9f9f9;
+}
+
+.radio-group {
+  display: flex;
+  gap: 10px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.expand-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.expand-button:hover {
+  color: #0066cc;
+}
+
+.expanded-content {
+  padding: 10px;
+  background-color: #f5f5f5;
+  margin: 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.drag-handle {
+  cursor: move;
+  padding: 5px;
+  margin-right: 5px;
+}
+import React, { useState } from 'react';
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  ColumnDef,
+  ColumnResizeMode,
+} from '@tanstack/react-table';
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
+import './styles.css';
+
+interface Student {
+  id: number;
+  name: string;
+  age: number;
+  mobile: string;
+  gender: string;
+  details: string;
+}
+
+const DraggableRow = ({ row, reorderRow }: any) => {
+  const [, dropRef] = useDrop({
+    accept: 'row',
+    drop: (draggedRow: any) => reorderRow(draggedRow.index, row.index),
+  });
+
+  const [{ isDragging }, dragRef] = useDrag({
+    type: 'row',
+    item: () => ({ index: row.index }),
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  return (
+    <tr
+      ref={(node) => dragRef(dropRef(node))}
+      style={{ opacity: isDragging ? 0.5 : 1 }}
+      className="tr"
+    >
+      <td className="td">
+        <GripVertical className="drag-handle" size={16} />
+      </td>
+      {row.getVisibleCells().map((cell: any) => (
+        <td key={cell.id} className="td">
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </td>
+      ))}
+    </tr>
+  );
+};
+
+function App() {
+  const [data, setData] = useState<Student[]>([
+    { id: 1, name: 'John Doe', age: 20, mobile: '1234567890', gender: 'male', details: 'Likes sports and music' },
+    { id: 2, name: 'Jane Smith', age: 21, mobile: '2345678901', gender: 'female', details: 'Enjoys reading and painting' },
+    { id: 3, name: 'Mike Johnson', age: 19, mobile: '3456789012', gender: 'male', details: 'Plays guitar and basketball' },
+    { id: 4, name: 'Sarah Williams', age: 22, mobile: '4567890123', gender: 'female', details: 'Studies computer science' },
+    { id: 5, name: 'Tom Brown', age: 20, mobile: '5678901234', gender: 'male', details: 'Active in student council' },
+  ]);
+
+  const [expanded, setExpanded] = useState<Record<number, boolean>>({});
+  const [columnResizeMode] = useState<ColumnResizeMode>('onChange');
+
+  const columns: ColumnDef<Student>[] = [
+    {
+      accessorKey: 'name',
+      header: 'Name',
+    },
+    {
+      accessorKey: 'age',
+      header: 'Age',
+    },
+    {
+      accessorKey: 'mobile',
+      header: 'Mobile No',
+    },
+    {
+      accessorKey: 'gender',
+      header: 'Gender',
+      cell: ({ row }) => (
+        <div className="radio-group">
+          <label className="radio-label">
+            <input
+              type="radio"
+              value="male"
+              checked={row.original.gender === 'male'}
+              onChange={(e) => {
+                const newData = [...data];
+                newData[row.index].gender = e.target.value;
+                setData(newData);
+              }}
+            />
+            Male
+          </label>
+          <label className="radio-label">
+            <input
+              type="radio"
+              value="female"
+              checked={row.original.gender === 'female'}
+              onChange={(e) => {
+                const newData = [...data];
+                newData[row.index].gender = e.target.value;
+                setData(newData);
+              }}
+            />
+            Female
+          </label>
+        </div>
+      ),
+    },
+    {
+      id: 'expander',
+      header: '',
+      cell: ({ row }) => (
+        <button
+          className="expand-button"
+          onClick={() => {
+            setExpanded((prev) => ({
+              ...prev,
+              [row.original.id]: !prev[row.original.id],
+            }));
+          }}
+        >
+          {expanded[row.original.id] ? (
+            <ChevronDown size={16} />
+          ) : (
+            <ChevronRight size={16} />
+          )}
+        </button>
+      ),
+    },
+  ];
+
+  const reorderRow = (draggedRowIndex: number, targetRowIndex: number) => {
+    const newData = [...data];
+    const draggedRow = newData[draggedRowIndex];
+    newData.splice(draggedRowIndex, 1);
+    newData.splice(targetRowIndex, 0, draggedRow);
+    setData(newData);
+  };
+
+  const table = useReactTable({
+    data,
+    columns,
+    columnResizeMode,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <div className="table-container">
+        <table className="table" style={{ width: table.getCenterTotalSize() }}>
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                <th className="th"></th>
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    className="th"
+                    style={{ width: header.getSize() }}
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                    <div
+                      onMouseDown={header.getResizeHandler()}
+                      onTouchStart={header.getResizeHandler()}
+                      className="th-resizer"
+                    />
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map((row) => (
+              <React.Fragment key={row.id}>
+                <DraggableRow row={row} reorderRow={reorderRow} />
+                {expanded[row.original.id] && (
+                  <tr>
+                    <td></td>
+                    <td colSpan={columns.length} className="expanded-content">
+                      {row.original.details}
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </DndProvider>
+  );
+}
+
+export default App;
+
+
+
+
