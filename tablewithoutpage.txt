@@ -1,0 +1,245 @@
+import { useState } from 'react';
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  SortingState,
+  useReactTable,
+  ColumnResizeMode,
+} from '@tanstack/react-table';
+import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react';
+import { Student } from '../types/student';
+import { students } from '../data/students';
+import styles from './StudentTable.module.css';
+
+const columnHelper = createColumnHelper<Student>();
+
+const columns = [
+  columnHelper.accessor('rollNo', {
+    header: 'Roll No',
+    cell: info => info.getValue(),
+    size: 100,
+  }),
+  columnHelper.accessor('name', {
+    header: 'Name',
+    cell: info => info.getValue(),
+    size: 150,
+  }),
+  columnHelper.accessor('address', {
+    header: 'Address',
+    cell: info => info.getValue(),
+    size: 250,
+  }),
+  columnHelper.accessor('email', {
+    header: 'Email',
+    cell: info => info.getValue(),
+    size: 200,
+  }),
+  columnHelper.accessor('mobile', {
+    header: 'Mobile No',
+    cell: info => info.getValue(),
+    size: 120,
+  }),
+  columnHelper.accessor('dob', {
+    header: 'Date of Birth',
+    cell: info => new Date(info.getValue()).toLocaleDateString(),
+    size: 120,
+  }),
+];
+
+export function StudentTable() {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [globalFilter, setGlobalFilter] = useState('');
+  const [columnResizeMode] = useState<ColumnResizeMode>('onChange');
+
+  const table = useReactTable({
+    data: students,
+    columns,
+    state: {
+      sorting,
+      globalFilter,
+    },
+    onSortingChange: setSorting,
+    onGlobalFilterChange: setGlobalFilter,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    columnResizeMode,
+  });
+
+  const getSortIcon = (isSorted: boolean | 'asc' | 'desc') => {
+    if (!isSorted) return <ArrowUpDown size={16} />;
+    return isSorted === 'asc' ? <ArrowUp size={16} /> : <ArrowDown size={16} />;
+  };
+
+  return (
+    <div className={styles.tableContainer}>
+      <h1 className={styles.title}>Student Records</h1>
+      
+      <div className={styles.searchContainer}>
+        <Search className={styles.searchIcon} size={20} />
+        <input
+          type="text"
+          value={globalFilter}
+          onChange={e => setGlobalFilter(e.target.value)}
+          placeholder="Search all columns..."
+          className={styles.searchInput}
+        />
+      </div>
+
+      <table className={styles.table} style={{ width: table.getCenterTotalSize() }}>
+        <thead className={styles.header}>
+          {table.getHeaderGroups().map(headerGroup => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map(header => (
+                <th
+                  key={header.id}
+                  className={styles.headerCell}
+                  onClick={header.column.getToggleSortingHandler()}
+                  style={{
+                    width: header.getSize(),
+                  }}
+                >
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                  )}
+                  <span className={styles.sortIcon}>
+                    {getSortIcon(header.column.getIsSorted())}
+                  </span>
+                  <div
+                    onMouseDown={header.getResizeHandler()}
+                    onTouchStart={header.getResizeHandler()}
+                    className={`${styles.resizer} ${
+                      header.column.getIsResizing() ? styles.isResizing : ''
+                    }`}
+                  />
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {table.getRowModel().rows.map(row => (
+            <tr key={row.id} className={styles.row}>
+              {row.getVisibleCells().map(cell => (
+                <td
+                  key={cell.id}
+                  className={styles.cell}
+                  style={{
+                    width: cell.column.getSize(),
+                  }}
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+
+
+
+.tableContainer {
+  margin: 2rem auto;
+  max-width: 1200px;
+  padding: 0 1rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.header {
+  background-color: #f3f4f6;
+}
+
+.headerCell {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.headerCell:hover {
+  background-color: #e5e7eb;
+}
+
+.cell {
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  color: #4b5563;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
+  width: 100%;
+  display: block;
+}
+
+.row:hover {
+  background-color: #f9fafb;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 1rem;
+}
+
+.sortIcon {
+  display: inline-block;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+.searchContainer {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.searchInput {
+  padding: 0.5rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  width: 300px;
+  font-size: 1rem;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.searchIcon {
+  color: #6b7280;
+}
+
+.resizer {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100
